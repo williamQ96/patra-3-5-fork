@@ -46,9 +46,16 @@ ENV GH_HUB_TOKEN=
 # Expose port for Flask REST API
 EXPOSE 5002
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5002/')" || exit 1
+# Health check (supports both Flask on :5002 and FastAPI on :5003)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import sys, urllib.request; urls=['http://localhost:5002/swagger','http://localhost:5003/docs']; ok=False; \
+for u in urls: \
+    try: \
+        with urllib.request.urlopen(u, timeout=5) as r: \
+            if r.status < 500: ok=True; break; \
+    except Exception: \
+        pass; \
+sys.exit(0 if ok else 1)" || exit 1
 
 # Default command
 CMD ["python", "rest_server/server.py"]
