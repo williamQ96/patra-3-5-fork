@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 import asyncpg
 
@@ -19,7 +19,7 @@ async def list_model_cards(
     """List all model cards. JWT bearer shows private; unauthenticated shows only public."""
     where = "" if include_private else " WHERE is_private = false"
     query = f"""
-        SELECT id, name, version, short_description
+        SELECT id, name, category, author, version, short_description
         FROM model_cards
         {where}
         ORDER BY id
@@ -29,8 +29,10 @@ async def list_model_cards(
         rows = await conn.fetch(query, limit, skip)
     return [
         ModelCardSummary(
-            mc_id=str(r["id"]),
+            mc_id=int(r["id"]),
             name=r["name"],
+            categories=r["category"],
+            author=r["author"],
             version=r["version"],
             short_description=r["short_description"],
         )
@@ -40,11 +42,12 @@ async def list_model_cards(
 
 @router.get("/modelcard/{id}", response_model=ModelCardDetail)
 async def get_model_card(
-    id: str,
+    id: int = Path(..., description="Model card ID (integer)"),
     pool: asyncpg.Pool = Depends(get_pool),
     include_private: bool = Depends(get_include_private),
 ):
-    """Get a single model card by ID. Returns 404 if private and caller has no JWT."""
+    """Get a single model card by ID (integer). Returns 404 if private and caller has no JWT."""
+    mc_id = id
     query = """
         SELECT mc.id, mc.name, mc.version, mc.short_description,
                mc.full_description, mc.keywords, mc.author, mc.citation,
@@ -59,15 +62,15 @@ async def get_model_card(
         WHERE mc.id = $1
     """
     async with pool.acquire() as conn:
-        row = await conn.fetchrow(query, id)
+        row = await conn.fetchrow(query, mc_id)
     if not row:
         raise HTTPException(status_code=404, detail="Model card not found")
     if row["is_private"] and not include_private:
         raise HTTPException(status_code=404, detail="Model card not found")
     ai_model = None
-    if row["model_id"]:
+    if row["model_id"] is not None:
         ai_model = AIModel(
-            model_id=row["model_id"],
+            model_id=int(row["model_id"]),
             name=row["model_name"],
             version=row["model_version"],
             description=row["model_description"],
@@ -79,7 +82,7 @@ async def get_model_card(
             test_accuracy=float(row["test_accuracy"]) if row["test_accuracy"] is not None else None,
         )
     return ModelCardDetail(
-        external_id=str(row["id"]),
+        external_id=int(row["id"]),
         name=row["name"],
         version=row["version"],
         short_description=row["short_description"],

@@ -9,16 +9,22 @@ Enum approval_status {
 }
 
 Table users {
-  id text [pk]
+  id bigint [pk, increment]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
 }
 
 Table edge_devices {
-  id text [pk]
+  id bigint [pk, increment]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
 }
 
 Table dataset_schemas {
   id bigint [pk, increment]
   blob jsonb [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
 }
 
 Table model_cards {
@@ -38,6 +44,8 @@ Table model_cards {
   foundational_model text
   category text
   documentation text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
 }
 
 Table datasheets {
@@ -56,11 +64,12 @@ Table datasheets {
   category text
   is_private boolean [not null, default: false]
   status approval_status [not null, default: 'pending']
-  updated_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
   alternate_identifier text
   related_identifier text
 
-  model_card_id bigint [not null, ref: > model_cards.id]
+  model_card_id bigint [ref: > model_cards.id]
   dataset_schema_id bigint [ref: > dataset_schemas.id]
 
   indexes {
@@ -71,7 +80,7 @@ Table datasheets {
 }
 
 Table models {
-  id text [pk]
+  id bigint [pk, increment]
   name text [not null]
   version text
   description text
@@ -84,6 +93,8 @@ Table models {
   model_metrics jsonb
   inference_labels jsonb
   model_structure jsonb
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
 
   model_card_id bigint [not null, unique, ref: > model_cards.id]
 
@@ -93,7 +104,7 @@ Table models {
 }
 
 Table experiments {
-  id text [pk]
+  id bigint [pk, increment]
   start_at timestamptz [not null]
   submitted_at timestamptz
   executed_at timestamptz
@@ -112,9 +123,12 @@ Table experiments {
   map_50 numeric(6,5)
   map_50_95 numeric(6,5)
 
-  user_id text [not null, ref: > users.id]
-  edge_device_id text [not null, ref: > edge_devices.id]
-  model_id text [not null, ref: > models.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  user_id bigint [not null, ref: > users.id]
+  edge_device_id bigint [not null, ref: > edge_devices.id]
+  model_id bigint [not null, ref: > models.id]
 
   indexes {
     (user_id)
@@ -124,25 +138,18 @@ Table experiments {
   }
 }
 
-Table deployments {
-  experiment_id text [pk, ref: > experiments.id]
-  started_at timestamptz [not null]
-
-  indexes {
-    (started_at)
-  }
-}
-
 Table raw_images {
-  id uuid [pk]
+  id bigint [pk, increment]
   image_name text [not null]
   ground_truth jsonb
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
 }
 
 Table experiment_images {
   id bigint [pk, increment]
-  experiment_id text [not null, ref: > experiments.id]
-  raw_image_id uuid [not null, ref: > raw_images.id]
+  experiment_id bigint [not null, ref: > experiments.id]
+  raw_image_id bigint [not null, ref: > raw_images.id]
 
   image_count integer
   image_received_at timestamptz

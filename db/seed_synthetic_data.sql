@@ -227,44 +227,44 @@ INSERT INTO datasheets (
   geo_location, category, is_private, model_card_id
 ) OVERRIDING SYSTEM VALUE VALUES
   -- PUBLIC (5)
-  (1, 'Microsoft AI for Earth', 'LILA Camera Traps', 'LILA BC',
+  (1, 'wqiu', 'LILA Camera Traps', 'LILA BC',
    2021, 'images', '3 TB', 'jpeg', '1.0', 'public',
    'Labelled camera-trap images from LILA BC.',
    'global', 'wildlife', false,
    '41d3ed40-b836-4a62-b3fb-67cee79f33d9'),
 
-  (2, 'torchvision', 'ImageNet-1K', 'Stanford / Princeton',
+  (2, 'jstubbs', 'ImageNet-1K', 'Stanford / Princeton',
    2012, 'images', '150 GB', 'jpeg', '1.0', 'academic',
    '1000-class subset of the ImageNet dataset.',
    'global', 'classification', false,
    'ec3f6227-14c5-4873-96d7-14ddcaf9b34a'),
 
-  (3, 'Yann LeCun', 'MNIST', 'NYU',
+  (3, 'nkarthikeyan', 'MNIST', 'NYU',
    1998, 'images', '50 MB', 'idx', '1.0', 'public',
    'Handwritten digit images 0-9.',
    'global', 'classification', false,
    '43d851cd-a509-49e3-8416-50b344b174ed'),
 
-  (4, 'COCO Consortium', 'MS COCO 2017', 'cocodataset.org',
+  (4, 'skhuvis', 'MS COCO 2017', 'cocodataset.org',
    2017, 'images', '25 GB', 'jpeg', '2017', 'CC BY 4.0',
    'Common Objects in Context detection/segmentation dataset.',
    'global', 'detection', false,
    '0cddbc64-75f7-4aee-a91d-c27583415bbc'),
 
-  (5, 'torchvision', 'ImageNet ResNet Subset', 'Stanford / Princeton',
+  (5, 'cgarcia', 'ImageNet ResNet Subset', 'Stanford / Princeton',
    2015, 'images', '12 GB', 'jpeg', '1.0', 'academic',
    'Curated ImageNet subset for ResNet50 benchmarking.',
    'global', 'classification', false,
    '0556d19e-b478-4a89-bd74-a2d822e97a8a'),
 
   -- PRIVATE (5)
-  (6, 'ICICLE', 'OSA Camera Traps', 'Open Science Alliance',
+  (6, 'rcardone', 'OSA Camera Traps', 'Open Science Alliance',
    2024, 'images', '18 GB', 'jpeg', '1.0', 'research-only',
    'OSA partner camera-trap imagery for fine-tuning.',
    'US', 'wildlife', true,
    '5356e5ba-b700-449a-ace3-ddecbce7a30a'),
 
-  (7, 'ICICLE', 'ENA Wildlife Survey', 'ICICLE',
+  (7, 'wqiu', 'ENA Wildlife Survey', 'ICICLE',
    2024, 'images', '32 GB', 'jpeg', '1.0', 'research-only',
    'Endangered North American species camera-trap survey.',
    'US', 'wildlife', true,
@@ -276,13 +276,13 @@ INSERT INTO datasheets (
    'US', 'detection', true,
    'de221f7c-5c78-4375-b9f0-617884b75aa5'),
 
-  (9, 'Ultralytics', 'YOLO26 Edge Benchmark', 'Ultralytics',
+  (9, 'skhuvis', 'YOLO26 Edge Benchmark', 'Ultralytics',
    2025, 'images', '8 GB', 'jpeg', '1.0', 'internal',
    'Edge device evaluation images for YOLO26n benchmarking.',
    'global', 'detection', true,
    '687437a9-aa0a-4255-a350-2cd6b822affd'),
 
-  (10, 'Ultralytics', 'YOLO26x High-Res Evaluation', 'Ultralytics',
+  (10, 'skhuvis', 'YOLO26x High-Res Evaluation', 'Ultralytics',
    2025, 'images', '45 GB', 'png', '1.0', 'internal',
    'High-resolution evaluation set for YOLO26x accuracy testing.',
    'global', 'detection', true,

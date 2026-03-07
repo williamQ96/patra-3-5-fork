@@ -2,6 +2,7 @@
 
 Scenario 1 – No token:  client sees only 5 public model cards / datasheets.
 Scenario 2 – Valid X-Tapis-Token: client sees all 10 model cards / datasheets.
+IDs are integers (1–10) per db/schema.dbml.
 """
 
 from api_server.tests.conftest import (
@@ -105,8 +106,10 @@ class TestEdgeCases:
         assert len(resp.json()) == 5
 
     def test_nonexistent_modelcard_returns_404(self, client, tapis_headers):
-        resp = client.get(
-            "/modelcard/00000000-0000-0000-0000-000000000000",
-            headers=tapis_headers,
-        )
+        resp = client.get("/modelcard/99999", headers=tapis_headers)
         assert resp.status_code == 404
+
+    def test_invalid_modelcard_id_returns_422(self, client, tapis_headers):
+        """Non-integer path (e.g. 'not-an-id') yields 422 Unprocessable Entity."""
+        resp = client.get("/modelcard/not-an-id", headers=tapis_headers)
+        assert resp.status_code == 422

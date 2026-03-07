@@ -3,6 +3,7 @@
 Provides a mock asyncpg pool that returns 10 model cards (5 public,
 5 private) and 10 datasheets (5 public, 5 private), plus helpers
 for the X-Tapis-Token header used by the patra-toolkit.
+IDs are integers (1–10) matching db/schema.dbml.
 """
 
 from contextlib import asynccontextmanager
@@ -12,38 +13,26 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-# ── Fake row data ────────────────────────────────────────────────────────────
+# ── Fake row data (integer IDs per schema) ─────────────────────────────────────
 
-PUBLIC_MC_IDS = [
-    "43d851cd-a509-49e3-8416-50b344b174ed",
-    "41d3ed40-b836-4a62-b3fb-67cee79f33d9",
-    "ec3f6227-14c5-4873-96d7-14ddcaf9b34a",
-    "0556d19e-b478-4a89-bd74-a2d822e97a8a",
-    "0cddbc64-75f7-4aee-a91d-c27583415bbc",
-]
-
-PRIVATE_MC_IDS = [
-    "5356e5ba-b700-449a-ace3-ddecbce7a30a",
-    "2983330b-28a4-4fb5-816d-aee0e421cb72",
-    "de221f7c-5c78-4375-b9f0-617884b75aa5",
-    "687437a9-aa0a-4255-a350-2cd6b822affd",
-    "4e7f645d-9c64-4fc6-b67d-04eb0a4ce44a",
-]
-
-ALL_MC_IDS = sorted(PUBLIC_MC_IDS + PRIVATE_MC_IDS)
+PUBLIC_MC_IDS = [1, 2, 3, 4, 5]
+PRIVATE_MC_IDS = [6, 7, 8, 9, 10]
+ALL_MC_IDS = list(range(1, 11))
 
 
-def _mc_row(mc_id: str, private: bool) -> dict:
+def _mc_row(mc_id: int, private: bool) -> dict:
     return {
         "id": mc_id,
-        "name": f"Model {mc_id[:8]}",
+        "name": f"Model {mc_id}",
+        "category": "classification",
+        "author": "tester",
         "version": "1.0",
-        "short_description": f"Description for {mc_id[:8]}",
+        "short_description": f"Description for {mc_id}",
         "is_private": private,
     }
 
 
-def _mc_detail_row(mc_id: str, private: bool) -> dict:
+def _mc_detail_row(mc_id: int, private: bool) -> dict:
     base = _mc_row(mc_id, private)
     base.update({
         "full_description": "Full desc",
@@ -56,7 +45,7 @@ def _mc_detail_row(mc_id: str, private: bool) -> dict:
         "foundational_model": "TestModel",
         "category": "classification",
         "documentation": "",
-        "model_id": f"{mc_id}-model",
+        "model_id": mc_id,
         "model_name": "TestModel",
         "model_version": "1.0",
         "model_description": "A test model",
@@ -71,12 +60,12 @@ def _mc_detail_row(mc_id: str, private: bool) -> dict:
 
 
 ALL_MC_ROWS = sorted(
-    [_mc_row(mc_id, False) for mc_id in PUBLIC_MC_IDS]
-    + [_mc_row(mc_id, True) for mc_id in PRIVATE_MC_IDS],
+    [_mc_row(i, False) for i in PUBLIC_MC_IDS]
+    + [_mc_row(i, True) for i in PRIVATE_MC_IDS],
     key=lambda r: r["id"],
 )
 PUBLIC_MC_ROWS = sorted(
-    [_mc_row(mc_id, False) for mc_id in PUBLIC_MC_IDS],
+    [_mc_row(i, False) for i in PUBLIC_MC_IDS],
     key=lambda r: r["id"],
 )
 
@@ -101,7 +90,7 @@ ALL_DS_ROWS = (
 PUBLIC_DS_ROWS = [_ds_row(i, False) for i in PUBLIC_DS_IDENTIFIERS]
 
 
-def _ds_detail_row(ident: int, private: bool) -> dict:
+def _ds_detail_row(ident: int, private: bool, model_card_id: int | None = 1) -> dict:
     base = _ds_row(ident, private)
     base.update({
         "publisher": "Test Publisher",
@@ -116,7 +105,7 @@ def _ds_detail_row(ident: int, private: bool) -> dict:
         "updated_at": None,
         "alternate_identifier": None,
         "related_identifier": None,
-        "model_card_id": PUBLIC_MC_IDS[0],
+        "model_card_id": model_card_id,
         "dataset_schema_id": None,
     })
     return base
@@ -143,16 +132,17 @@ def _make_mock_pool():
 
     async def _fetchrow(query: str, *args):
         if "model_cards" in query and args:
-            mc_id = args[0]
-            private = mc_id in PRIVATE_MC_IDS
-            if mc_id in ALL_MC_IDS:
-                return _mc_detail_row(mc_id, private)
+            raw = args[0]
+            mc_id = int(raw) if isinstance(raw, str) and raw.isdigit() else raw
+            if isinstance(mc_id, int) and mc_id in ALL_MC_IDS:
+                return _mc_detail_row(mc_id, mc_id in PRIVATE_MC_IDS)
             return None
         if "datasheets" in query and args:
             ident = args[0]
-            private = ident in PRIVATE_DS_IDENTIFIERS
             if ident in PUBLIC_DS_IDENTIFIERS or ident in PRIVATE_DS_IDENTIFIERS:
-                return _ds_detail_row(ident, private)
+                private = ident in PRIVATE_DS_IDENTIFIERS
+                model_card_id = None if ident in (8, 9) else 1
+                return _ds_detail_row(ident, private, model_card_id=model_card_id)
             return None
         return None
 

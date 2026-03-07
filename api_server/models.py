@@ -7,18 +7,20 @@ from pydantic import BaseModel
 
 
 class ModelCardSummary(BaseModel):
-    """List endpoint: matches get_all_mcs() format."""
+    """List endpoint: mc_id, name, categories, author, version, short_description."""
 
-    mc_id: str
+    mc_id: int
     name: str
+    categories: Optional[str] = None
+    author: Optional[str] = None
     version: Optional[str] = None
     short_description: Optional[str] = None
 
 
 class AIModel(BaseModel):
-    """Nested model from models table."""
+    """Nested model from models table. model_id is integer per schema."""
 
-    model_id: str
+    model_id: int
     name: str
     version: Optional[str] = None
     description: Optional[str] = None
@@ -31,9 +33,9 @@ class AIModel(BaseModel):
 
 
 class ModelCardDetail(BaseModel):
-    """Detail endpoint: matches reconstruct() format."""
+    """Detail endpoint: matches reconstruct() format. external_id is integer per schema."""
 
-    external_id: str
+    external_id: int
     name: str
     version: Optional[str] = None
     short_description: Optional[str] = None
@@ -81,5 +83,5 @@ class DatasheetDetail(BaseModel):
     updated_at: Optional[str] = None
     alternate_identifier: Optional[str] = None
     related_identifier: Optional[str] = None
-    model_card_id: str
-    dataset_schema_id: Optional[str] = None
+    model_card_id: Optional[int] = None
+    dataset_schema_id: Optional[int] = None
